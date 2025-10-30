@@ -164,7 +164,8 @@ export function buildPositions(account: FuturesAccount): PositionViewModel[] {
           ? (unrealizedProfit / marginBasis) * 100
           : 0;
 
-      const isolated = position.isolated.toLowerCase() === "true";
+      const isolated =
+        String(position.isolated ?? "false").toLowerCase() === "true";
 
       const marginValue = isolated
         ? Number(position.isolatedWallet ?? marginBasis)

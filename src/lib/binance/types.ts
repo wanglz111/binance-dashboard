@@ -21,7 +21,7 @@ export interface FuturesPosition {
   positionInitialMargin: string;
   openOrderInitialMargin: string;
   leverage: string;
-  isolated: "true" | "false";
+  isolated: "true" | "false" | boolean;
   entryPrice: string;
   maxNotional: string;
   positionSide: PositionSide;
