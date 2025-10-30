@@ -2,18 +2,14 @@ import { z } from "zod";
 
 const bool = z
   .enum(["true", "false", "1", "0"], {
-    errorMap: () => ({ message: "Expected a boolean-like string" }),
+    message: "Expected a boolean-like string",
   })
   .transform((value) => value === "true" || value === "1");
 
 const envSchema = z.object({
   BINANCE_API_KEY: z.string().optional(),
   BINANCE_API_SECRET: z.string().optional(),
-  BINANCE_INITIAL_EQUITY: z
-    .string()
-    .optional()
-    .transform((value) => (value ? Number(value) : 0))
-    .pipe(z.number().nonnegative().default(0)),
+  BINANCE_INITIAL_EQUITY: z.coerce.number().nonnegative().optional().default(0),
   BINANCE_ACCOUNT_TYPE: z
     .enum(["futures", "spot"])
     .default("futures")

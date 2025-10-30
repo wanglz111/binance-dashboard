@@ -17,6 +17,7 @@ export interface FuturesPosition {
   initialMargin: string;
   maintMargin: string;
   unrealizedProfit: string;
+  unRealizedProfit?: string; // Some endpoints still use the legacy casing
   positionInitialMargin: string;
   openOrderInitialMargin: string;
   leverage: string;

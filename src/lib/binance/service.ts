@@ -164,8 +164,7 @@ export function buildPositions(account: FuturesAccount): PositionViewModel[] {
           ? (unrealizedProfit / marginBasis) * 100
           : 0;
 
-      const isolated =
-        position.isolated === "true" || position.isolated === "TRUE";
+      const isolated = position.isolated.toLowerCase() === "true";
 
       const marginValue = isolated
         ? Number(position.isolatedWallet ?? marginBasis)
@@ -192,18 +191,22 @@ export function buildPositions(account: FuturesAccount): PositionViewModel[] {
 
 export function buildTrades(trades: Trade[]): TradeViewModel[] {
   return trades
-    .map((trade) => ({
-      id: trade.id,
-      symbol: trade.symbol,
-      side: trade.buyer ? "BUY" : "SELL",
-      price: Number(trade.price ?? 0),
-      qty: Number(trade.qty ?? 0),
-      quoteQty: Number(trade.quoteQty ?? 0),
-      realizedPnl: Number(trade.realizedPnl ?? 0),
-      commission: Number(trade.commission ?? 0),
-      commissionAsset: trade.commissionAsset,
-      time: trade.time,
-      isMaker: trade.maker,
-    }))
+    .map((trade) => {
+      const side: "BUY" | "SELL" = trade.buyer ? "BUY" : "SELL";
+
+      return {
+        id: trade.id,
+        symbol: trade.symbol,
+        side,
+        price: Number(trade.price ?? 0),
+        qty: Number(trade.qty ?? 0),
+        quoteQty: Number(trade.quoteQty ?? 0),
+        realizedPnl: Number(trade.realizedPnl ?? 0),
+        commission: Number(trade.commission ?? 0),
+        commissionAsset: trade.commissionAsset,
+        time: trade.time,
+        isMaker: trade.maker,
+      };
+    })
     .sort((a, b) => b.time - a.time);
 }
