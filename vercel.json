@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "app/**/route.ts": {
+      "regions": ["sin1"]
+    }
+  }
+}
