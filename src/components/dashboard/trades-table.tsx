@@ -130,9 +130,9 @@ export function TradesTable({
                         {isBuy ? "BUY" : "SELL"}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
-                      {formatNumber(trade.price)}
-                    </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
+                      {formatNumber(trade.price, trade.pricePrecision)}
+                  </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
                       {formatNumber(trade.qty, 4)}
                     </td>

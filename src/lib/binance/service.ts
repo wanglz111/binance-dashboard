@@ -12,6 +12,17 @@ import type {
 import { createMockService } from "@/lib/binance/mock";
 
 const BASE_CURRENCY_FALLBACK = "USDT";
+const DEFAULT_PRICE_PRECISION = 2;
+
+const getPrecisionFromString = (
+  value: string | undefined,
+  fallback = DEFAULT_PRICE_PRECISION,
+) => {
+  if (!value) return fallback;
+
+  const [, decimals] = value.split(".");
+  return decimals ? Math.max(decimals.length, fallback) : fallback;
+};
 
 export type BinanceServiceContract = {
   getAccount(): Promise<FuturesAccount>;
@@ -143,15 +154,23 @@ export function buildPositions(account: FuturesAccount): PositionViewModel[] {
         return null;
       }
 
-      const entryPrice = Number(position.entryPrice ?? 0);
+      const entryPriceStr = position.entryPrice ?? "0";
+      const markPriceStr = position.markPrice ??
+        (quantity !== 0 ? Math.abs(Number(position.notional ?? 0) / quantity).toString() : "0");
+
+      const entryPrice = Number(entryPriceStr ?? 0);
       const notional = Number(position.notional ?? 0);
       const unrealizedProfit =
         Number(position.unrealizedProfit ?? position.unRealizedProfit ?? 0) ||
         0;
 
-      const markPrice =
-        Number(position.markPrice ?? 0) ||
+      const markPrice = Number(markPriceStr ?? 0) ||
         (quantity !== 0 ? Math.abs(notional / quantity) : 0);
+
+      const pricePrecision = Math.max(
+        getPrecisionFromString(entryPriceStr),
+        getPrecisionFromString(markPriceStr),
+      );
 
       const leverage = Number(position.leverage ?? 0) || 0;
       const notionalAbs = Math.abs(notional);
@@ -176,6 +195,7 @@ export function buildPositions(account: FuturesAccount): PositionViewModel[] {
         side: quantity >= 0 ? "LONG" : "SHORT",
         entryPrice,
         markPrice,
+        pricePrecision,
         positionAmount: quantity,
         leverage,
         unrealizedPnl: unrealizedProfit,
@@ -194,12 +214,14 @@ export function buildTrades(trades: Trade[]): TradeViewModel[] {
   return trades
     .map((trade) => {
       const side: "BUY" | "SELL" = trade.buyer ? "BUY" : "SELL";
+      const pricePrecision = getPrecisionFromString(trade.price);
 
       return {
         id: trade.id,
         symbol: trade.symbol,
         side,
         price: Number(trade.price ?? 0),
+        pricePrecision,
         qty: Number(trade.qty ?? 0),
         quoteQty: Number(trade.quoteQty ?? 0),
         realizedPnl: Number(trade.realizedPnl ?? 0),

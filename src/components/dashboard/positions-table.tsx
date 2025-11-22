@@ -91,12 +91,12 @@ export function PositionsTable({
                         {isLong ? "LONG" : "SHORT"}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
-                      {formatNumber(position.entryPrice)}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
-                      {formatNumber(position.markPrice)}
-                    </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
+                      {formatNumber(position.entryPrice, position.pricePrecision)}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
+                      {formatNumber(position.markPrice, position.pricePrecision)}
+                  </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
                       {formatNumber(position.positionAmount, 3)}
                     </td>

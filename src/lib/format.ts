@@ -1,13 +1,26 @@
+const DEFAULT_NUMBER_PRECISION = 2;
+
 const percentFormatter = new Intl.NumberFormat("en-US", {
   style: "percent",
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
 
-const numberFormatter = new Intl.NumberFormat("en-US", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+const numberFormatterCache = new Map<number, Intl.NumberFormat>();
+
+const getNumberFormatter = (precision: number) => {
+  if (!numberFormatterCache.has(precision)) {
+    numberFormatterCache.set(
+      precision,
+      new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: precision,
+        maximumFractionDigits: precision,
+      }),
+    );
+  }
+
+  return numberFormatterCache.get(precision)!;
+};
 
 export const formatPercent = (value: number) => {
   if (!Number.isFinite(value)) {
@@ -16,11 +29,16 @@ export const formatPercent = (value: number) => {
   return percentFormatter.format(value / 100);
 };
 
-export const formatNumber = (value: number, fractionDigits = 2) => {
+export const formatNumber = (
+  value: number,
+  fractionDigits = DEFAULT_NUMBER_PRECISION,
+) => {
   if (!Number.isFinite(value)) {
     return "--";
   }
-  return numberFormatter.format(Number(value.toFixed(fractionDigits)));
+
+  const formatter = getNumberFormatter(fractionDigits);
+  return formatter.format(Number(value.toFixed(fractionDigits)));
 };
 
 export const formatDateTime = (timestamp: number) =>
@@ -35,5 +53,5 @@ export const formatCurrency = (value: number, currency = "USDT") => {
   if (!Number.isFinite(value)) {
     return `-- ${currency}`;
   }
-  return `${numberFormatter.format(value)} ${currency}`;
+  return `${getNumberFormatter(DEFAULT_NUMBER_PRECISION).format(value)} ${currency}`;
 };
