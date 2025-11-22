@@ -53,6 +53,14 @@ export function AnalysisPanel({ summary, trades }: AnalysisPanelProps) {
     };
   }, [trades]);
 
+  const commissionEntries = useMemo(
+    () =>
+      Object.entries(summary?.commissionByAsset ?? {})
+        .map(([asset, value]) => ({ asset, value }))
+        .sort((a, b) => b.value - a.value),
+    [summary?.commissionByAsset],
+  );
+
   return (
     <div className="grid gap-6 rounded-3xl border border-slate-800/40 bg-slate-950/40 p-6 shadow-xl shadow-black/15 backdrop-blur lg:grid-cols-[2fr_3fr]">
       <div className="space-y-4">
@@ -93,6 +101,32 @@ export function AnalysisPanel({ summary, trades }: AnalysisPanelProps) {
             value={
               summary
                 ? formatCurrency(summary.maxLoss, summary.baseCurrency)
+                : "--"
+            }
+          />
+          <StatItem
+            label="交易总量"
+            value={
+              summary
+                ? formatCurrency(
+                    summary.totalTradeVolume,
+                    summary.baseCurrency,
+                  )
+                : "--"
+            }
+          />
+          <StatItem
+            label="交易笔数"
+            value={`${summary?.totalTradeCount ?? trades.length} 笔`}
+          />
+          <StatItem
+            label="累计手续费"
+            value={
+              summary
+                ? formatCurrency(
+                    summary.totalCommission,
+                    summary.baseCurrency,
+                  )
                 : "--"
             }
           />
@@ -151,6 +185,23 @@ export function AnalysisPanel({ summary, trades }: AnalysisPanelProps) {
             }
           />
         </div>
+        {commissionEntries.length > 0 ? (
+          <div className="rounded-2xl border border-slate-800/40 bg-slate-900/30 px-4 py-3 text-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              手续费分布（历史）
+            </div>
+            <div className="mt-2 flex flex-wrap gap-3">
+              {commissionEntries.map((item) => (
+                <span
+                  key={item.asset}
+                  className="rounded-full border border-slate-700/60 bg-slate-950/40 px-3 py-1 text-xs text-slate-200"
+                >
+                  {item.asset}: {formatCurrency(item.value, item.asset)}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -35,6 +35,7 @@ export function PositionsTable({
                 "开仓价格",
                 "标记价格",
                 "持仓量",
+                "实际仓位",
                 "未实现盈亏",
                 "盈亏率",
                 "杠杆",
@@ -54,7 +55,7 @@ export function PositionsTable({
             {isLoading ? (
               <tr>
                 <td
-                  colSpan={9}
+                  colSpan={10}
                   className="px-6 py-12 text-center text-sm text-slate-400"
                 >
                   正在加载仓位数据...
@@ -63,7 +64,7 @@ export function PositionsTable({
             ) : positions.length === 0 ? (
               <tr>
                 <td
-                  colSpan={9}
+                  colSpan={10}
                   className="px-6 py-12 text-center text-sm text-slate-500"
                 >
                   当前暂无持仓
@@ -91,20 +92,23 @@ export function PositionsTable({
                         {isLong ? "LONG" : "SHORT"}
                       </span>
                     </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
                       {formatNumber(position.entryPrice, position.pricePrecision)}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
                       {formatNumber(position.markPrice, position.pricePrecision)}
-                  </td>
+                    </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
                       {formatNumber(position.positionAmount, 3)}
                     </td>
-                    <td
-                      className={cn(
-                        "whitespace-nowrap px-6 py-4 text-sm font-semibold",
-                        pnlPositive ? "text-emerald-400" : "text-rose-400",
-                      )}
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-300">
+                    {formatCurrency(Math.abs(position.notional), currency)}
+                  </td>
+                  <td
+                    className={cn(
+                      "whitespace-nowrap px-6 py-4 text-sm font-semibold",
+                      pnlPositive ? "text-emerald-400" : "text-rose-400",
+                    )}
                     >
                       {formatCurrency(position.unrealizedPnl, currency)}
                     </td>

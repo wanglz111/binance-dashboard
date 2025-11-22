@@ -233,6 +233,29 @@ export function useDashboardData() {
           summary.maxWin >= Math.abs(summary.maxLoss) ? "positive" : "negative",
         secondaryLabel: "最大亏损",
       },
+      {
+        label: "累计手续费",
+        value: summary.totalCommission ?? 0,
+        currency: summary.baseCurrency,
+        type: "currency",
+        highlight: "negative",
+      },
+      {
+        label: "总交易量",
+        value: summary.totalTradeVolume ?? 0,
+        currency: summary.baseCurrency,
+        type: "currency",
+        highlight: "neutral",
+        secondaryLabel: `${summary.totalTradeCount ?? 0} 笔`,
+      },
+      {
+        label: "当前仓位规模",
+        value: summary.totalPositionNotional ?? 0,
+        currency: summary.baseCurrency,
+        type: "currency",
+        highlight: "neutral",
+        secondaryLabel: "保证金 × 杠杆",
+      },
     ];
   }, [data]);
 

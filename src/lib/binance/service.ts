@@ -3,7 +3,9 @@ import { BinanceRestClient } from "@/lib/binance/client";
 import type {
   DashboardPayload,
   FuturesAccount,
+  FuturesOrder,
   IncomeRecord,
+  OrderViewModel,
   PositionViewModel,
   Trade,
   TradeViewModel,
@@ -28,6 +30,7 @@ export type BinanceServiceContract = {
   getAccount(): Promise<FuturesAccount>;
   getTrades(limit?: number): Promise<Trade[]>;
   getIncome(limit?: number, incomeType?: string): Promise<IncomeRecord[]>;
+  getOpenOrders(symbol?: string): Promise<FuturesOrder[]>;
   createListenKey(): Promise<string>;
   keepAliveListenKey(listenKey: string): Promise<void>;
   getDashboardPayload(): Promise<DashboardPayload>;
@@ -43,6 +46,12 @@ class BinanceService implements BinanceServiceContract {
   async getTrades(limit = 50): Promise<Trade[]> {
     return this.client.signedFetch("/fapi/v1/userTrades", {
       limit,
+    });
+  }
+
+  async getOpenOrders(symbol?: string): Promise<FuturesOrder[]> {
+    return this.client.signedFetch("/fapi/v1/openOrders", {
+      symbol,
     });
   }
 
@@ -70,20 +79,28 @@ class BinanceService implements BinanceServiceContract {
   }
 
   async getDashboardPayload(): Promise<DashboardPayload> {
-    const [account, trades, income] = await Promise.all([
+    const [account, trades, income, orders] = await Promise.all([
       this.getAccount(),
-      this.getTrades(),
+      this.getTrades(500),
       this.getIncome(500, "REALIZED_PNL"),
+      this.getOpenOrders(),
     ]);
 
-    const summary = buildSummary(account, trades, income, env.BINANCE_INITIAL_EQUITY);
+    const summary = buildSummary(
+      account,
+      trades,
+      income,
+      env.BINANCE_INITIAL_EQUITY,
+    );
     const positions = buildPositions(account);
     const tradeViews = buildTrades(trades);
+    const orderViews = buildOrders(orders);
 
     return {
       summary,
       positions,
       trades: tradeViews,
+      orders: orderViews,
     };
   }
 }
@@ -132,6 +149,35 @@ export function buildSummary(
     account.assets.find((asset) => Number(asset.walletBalance) > 0)?.asset ??
     BASE_CURRENCY_FALLBACK;
 
+  const commissionByAsset = trades.reduce<Record<string, number>>(
+    (acc, trade) => {
+      const asset = trade.commissionAsset || baseCurrency;
+      const commission = Number(trade.commission ?? 0);
+      if (!Number.isFinite(commission)) return acc;
+      acc[asset] = (acc[asset] ?? 0) + commission;
+      return acc;
+    },
+    {},
+  );
+
+  const totalCommission = Object.values(commissionByAsset).reduce(
+    (sum, value) => sum + value,
+    0,
+  );
+
+  const totalTradeVolume = trades.reduce((sum, trade) => {
+    const amount = Number(trade.quoteQty ?? 0);
+    return sum + (Number.isFinite(amount) ? Math.abs(amount) : 0);
+  }, 0);
+
+  const totalPositionNotional = account.positions.reduce((sum, position) => {
+    const notional = Number(position.notional ?? 0);
+    return sum + (Number.isFinite(notional) ? Math.abs(notional) : 0);
+  }, 0);
+
+  const lastUpdated =
+    account.updateTime || trades[0]?.time || incomes[0]?.time || Date.now();
+
   return {
     totalAsset,
     totalProfit,
@@ -140,8 +186,13 @@ export function buildSummary(
     unrealizedRate,
     maxWin,
     maxLoss,
-    lastUpdated: account.updateTime ?? Date.now(),
+    lastUpdated,
     baseCurrency,
+    totalCommission,
+    commissionByAsset,
+    totalTradeVolume,
+    totalTradeCount: trades.length,
+    totalPositionNotional,
   };
 }
 
@@ -232,4 +283,34 @@ export function buildTrades(trades: Trade[]): TradeViewModel[] {
       };
     })
     .sort((a, b) => b.time - a.time);
+}
+
+export function buildOrders(orders: FuturesOrder[]): OrderViewModel[] {
+  return orders
+    .map((order) => {
+      const pricePrecision = getPrecisionFromString(order.price);
+      const qtyPrecision = getPrecisionFromString(order.origQty, 3);
+      const price = Number(order.price ?? 0);
+      const origQty = Number(order.origQty ?? 0);
+      const executedQty = Number(order.executedQty ?? 0);
+      const quoteAmount = Number(order.cumQuote ?? 0);
+      const remainingQty = Math.max(origQty - executedQty, 0);
+
+      return {
+        orderId: order.orderId,
+        symbol: order.symbol,
+        side: order.side,
+        type: order.type,
+        status: order.status,
+        price,
+        pricePrecision,
+        origQty,
+        executedQty,
+        remainingQty,
+        quoteAmount,
+        qtyPrecision,
+        updateTime: order.updateTime ?? order.time ?? Date.now(),
+      };
+    })
+    .sort((a, b) => b.updateTime - a.updateTime);
 }

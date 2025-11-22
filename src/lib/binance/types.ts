@@ -53,6 +53,30 @@ export interface FuturesAccount {
   positions: FuturesPosition[];
 }
 
+export interface FuturesOrder {
+  symbol: string;
+  orderId: number;
+  clientOrderId: string;
+  price: string;
+  origQty: string;
+  executedQty: string;
+  cumQuote: string;
+  status: string;
+  timeInForce: string;
+  type: string;
+  side: "BUY" | "SELL";
+  stopPrice: string;
+  activatePrice?: string;
+  priceProtect: boolean;
+  reduceOnly?: boolean;
+  closePosition?: boolean;
+  positionSide?: PositionSide;
+  workingType?: string;
+  priceMatch?: string;
+  updateTime: number;
+  time: number;
+}
+
 export interface Trade {
   symbol: string;
   id: number;
@@ -107,6 +131,22 @@ export interface PositionViewModel {
   updateTime: number;
 }
 
+export interface OrderViewModel {
+  orderId: number;
+  symbol: string;
+  side: "BUY" | "SELL";
+  type: string;
+  status: string;
+  price: number;
+  pricePrecision: number;
+  origQty: number;
+  executedQty: number;
+  remainingQty: number;
+  quoteAmount: number;
+  qtyPrecision: number;
+  updateTime: number;
+}
+
 export interface TradeViewModel {
   id: number;
   symbol: string;
@@ -132,10 +172,16 @@ export interface DashboardSummary {
   maxLoss: number;
   lastUpdated: number;
   baseCurrency: string;
+  totalCommission: number;
+  commissionByAsset: Record<string, number>;
+  totalTradeVolume: number;
+  totalTradeCount: number;
+  totalPositionNotional: number;
 }
 
 export interface DashboardPayload {
   summary: DashboardSummary;
   positions: PositionViewModel[];
   trades: TradeViewModel[];
+  orders: OrderViewModel[];
 }
