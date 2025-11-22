@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AnalysisPanel } from "@/components/dashboard/analysis-panel";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { MetricCard } from "@/components/dashboard/metric-card";
+import { OrdersTable } from "@/components/dashboard/orders-table";
 import { PositionsTable } from "@/components/dashboard/positions-table";
 import { TradesTable } from "@/components/dashboard/trades-table";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
@@ -87,6 +88,7 @@ export default function Home() {
           isStreamConnected={isStreamConnected}
           isStreamEnabled={isStreamEnabled}
           lastUpdated={data?.summary?.lastUpdated}
+          isLoading={isLoading}
           onRefresh={handleRefresh}
           isRefreshing={isRefreshing}
         />
@@ -117,6 +119,12 @@ export default function Home() {
 
         <PositionsTable
           positions={data?.positions ?? []}
+          currency={baseCurrency}
+          isLoading={isLoading}
+        />
+
+        <OrdersTable
+          orders={data?.orders ?? []}
           currency={baseCurrency}
           isLoading={isLoading}
         />

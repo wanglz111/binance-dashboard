@@ -9,6 +9,7 @@ interface DashboardHeaderProps {
   isStreamConnected: boolean;
   isStreamEnabled: boolean;
   lastUpdated?: number;
+  isLoading?: boolean;
   onRefresh?: () => void | Promise<void>;
   isRefreshing?: boolean;
 }
@@ -18,6 +19,7 @@ export function DashboardHeader({
   isStreamConnected,
   isStreamEnabled,
   lastUpdated,
+  isLoading = false,
   onRefresh,
   isRefreshing = false,
 }: DashboardHeaderProps) {
@@ -33,6 +35,12 @@ export function DashboardHeader({
       ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
       : "border-amber-400/40 bg-amber-400/10 text-amber-200";
 
+  const syncLabel = isLoading
+    ? "正在同步数据..."
+    : lastUpdated
+      ? `最后同步：${formatDateTime(lastUpdated)}`
+      : "暂无同步记录";
+
   return (
     <header className="flex flex-col gap-6 rounded-3xl border border-slate-800/50 bg-slate-950/40 p-6 shadow-2xl shadow-black/30 backdrop-blur lg:flex-row lg:items-center lg:justify-between">
       <div className="flex items-center gap-4">
@@ -46,11 +54,7 @@ export function DashboardHeader({
           <h1 className="text-2xl font-semibold text-slate-100">
             智能资产监控面板
           </h1>
-          <p className="text-sm text-slate-400">
-            {lastUpdated
-              ? `最后同步：${formatDateTime(lastUpdated)}`
-              : "等待同步..."}
-          </p>
+          <p className="text-sm text-slate-400">{syncLabel}</p>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-3 text-sm text-slate-300">

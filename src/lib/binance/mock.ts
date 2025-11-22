@@ -4,11 +4,13 @@ import {
   buildPositions,
   buildSummary,
   buildTrades,
+  buildOrders,
 } from "@/lib/binance/service";
 import type {
   DashboardPayload,
   FuturesAccount,
   IncomeRecord,
+  FuturesOrder,
   Trade,
 } from "@/lib/binance/types";
 
@@ -377,6 +379,55 @@ const mockIncome: IncomeRecord[] = [
   },
 ];
 
+const mockOpenOrders: FuturesOrder[] = [
+  {
+    symbol: "SOLUSDT",
+    orderId: 2001,
+    clientOrderId: "mock-order-1",
+    price: "198.3200",
+    origQty: "1.5000",
+    executedQty: "0.5000",
+    cumQuote: "99.16",
+    status: "NEW",
+    timeInForce: "GTC",
+    type: "LIMIT",
+    side: "SELL",
+    stopPrice: "0",
+    activatePrice: undefined,
+    priceProtect: false,
+    reduceOnly: false,
+    closePosition: false,
+    positionSide: "BOTH",
+    workingType: "CONTRACT_PRICE",
+    priceMatch: "NONE",
+    updateTime: now - 10 * 60 * 1000,
+    time: now - 10 * 60 * 1000,
+  },
+  {
+    symbol: "BTCUSDT",
+    orderId: 2002,
+    clientOrderId: "mock-order-2",
+    price: "110500.0000",
+    origQty: "0.0020",
+    executedQty: "0.0000",
+    cumQuote: "0",
+    status: "PARTIALLY_FILLED",
+    timeInForce: "GTC",
+    type: "LIMIT",
+    side: "BUY",
+    stopPrice: "0",
+    activatePrice: undefined,
+    priceProtect: false,
+    reduceOnly: false,
+    closePosition: false,
+    positionSide: "BOTH",
+    workingType: "CONTRACT_PRICE",
+    priceMatch: "NONE",
+    updateTime: now - 18 * 60 * 1000,
+    time: now - 18 * 60 * 1000,
+  },
+];
+
 export function createMockService(): BinanceServiceContract {
   const initialEquity = env.BINANCE_INITIAL_EQUITY || 200;
 
@@ -393,6 +444,9 @@ export function createMockService(): BinanceServiceContract {
     ): Promise<IncomeRecord[]> {
       void incomeType;
       return mockIncome.slice(0, limit);
+    },
+    async getOpenOrders(): Promise<FuturesOrder[]> {
+      return mockOpenOrders;
     },
     async createListenKey(): Promise<string> {
       return "mock-listen-key";
@@ -411,6 +465,7 @@ export function createMockService(): BinanceServiceContract {
         ),
         positions: buildPositions(mockAccount),
         trades: buildTrades(mockTrades),
+        orders: buildOrders(mockOpenOrders),
       };
     },
   };
