@@ -96,6 +96,7 @@ export interface PositionViewModel {
   side: "LONG" | "SHORT";
   entryPrice: number;
   markPrice: number;
+  pricePrecision: number;
   positionAmount: number;
   leverage: number;
   unrealizedPnl: number;
@@ -111,6 +112,7 @@ export interface TradeViewModel {
   symbol: string;
   side: "BUY" | "SELL";
   price: number;
+  pricePrecision: number;
   qty: number;
   quoteQty: number;
   realizedPnl: number;
