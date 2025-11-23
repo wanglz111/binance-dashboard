@@ -145,8 +145,27 @@ export function buildSummary(
       ? Math.min(0, ...realizedPnls)
       : Math.min(0, ...trades.map((trade) => Number(trade.realizedPnl ?? 0)));
 
+  const preferredBaseCurrencies = ["USDT", "BUSD", "USDC", "FDUSD", "TUSD"];
+
   const baseCurrency =
-    account.assets.find((asset) => Number(asset.walletBalance) > 0)?.asset ??
+    preferredBaseCurrencies.find((currency) =>
+      account.assets.some(
+        (asset) => asset.asset === currency && Number(asset.walletBalance) > 0,
+      ),
+    ) ??
+    account.assets.reduce<string | null>((currentAsset, asset) => {
+      const balance = Number(asset.walletBalance ?? 0);
+      if (!Number.isFinite(balance) || balance <= 0) return currentAsset;
+
+      if (currentAsset === null) return asset.asset;
+
+      const currentBalance = Number(
+        account.assets.find(({ asset }) => asset === currentAsset)?.walletBalance ??
+          0,
+      );
+
+      return balance > currentBalance ? asset.asset : currentAsset;
+    }, null) ??
     BASE_CURRENCY_FALLBACK;
 
   const commissionByAsset = trades.reduce<Record<string, number>>(
